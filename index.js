@@ -95,7 +95,6 @@ log.bot.start((botCtx) => {
     log.write("LOOP", "Finish Stress Test");
     botCtx.reply("Finish Stress Test!");
     createResume(count, limit, log.write, resolve.botCtx);
-    botCtx.reply('Full Log File: ')
     botCtx.replyWithDocument({ source: "./logs/" + log.logFile })
   });
 });
