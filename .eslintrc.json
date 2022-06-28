@@ -18,7 +18,7 @@
   ],
   "rules": {
     "prettier/prettier": "error",
-    "no-async-promise-executor": "warn",
+    "no-async-promise-executor": "off",
     "no-unused-vars": [
       "error",
       {

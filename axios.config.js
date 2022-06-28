@@ -1,4 +1,4 @@
-const axios = require("axios");
+const axios = require('axios');
 
 axios.interceptors.response.use(
   function (response) {
@@ -12,7 +12,7 @@ axios.interceptors.response.use(
     error.duration =
       error.config.metadata.endTime - error.config.metadata.startTime;
     return Promise.reject(error);
-  }
+  },
 );
 
 axios.defaults.headers.common = {
@@ -26,7 +26,7 @@ axios.interceptors.request.use(
   },
   function (error) {
     return Promise.reject(error);
-  }
+  },
 );
 
 module.exports = axios;
