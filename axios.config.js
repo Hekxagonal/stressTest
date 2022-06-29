@@ -16,7 +16,7 @@ axios.interceptors.response.use(
 );
 
 axios.defaults.headers.common = {
-  Authorization: `bearer ${process.env.AUTH_TOKEN}`,
+  Authorization: `bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InN1cG9ydGUiLCJzdWIiOjEsImlhdCI6MTY1NjQ1MzA3OSwiZXhwIjoxNjU2NTM5NDc5fQ.yb5sqFYPEmw6t6lddoCB03ctmS4xx2-O9Dbq3VW_F8M`,
 };
 
 axios.interceptors.request.use(

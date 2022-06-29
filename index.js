@@ -4,8 +4,6 @@ const log = require('./services/log');
 const { Counter, createResume } = require('./services/createResume');
 require('dotenv').config();
 
-const controller = new AbortController();
-
 log.bot.start((botCtx) => {
   log.write('CONFIG', 'LogFilePath: ' + log.logFilePath);
   botCtx.reply('Starting Stress Test Bot!');
@@ -37,22 +35,25 @@ log.bot.start((botCtx) => {
         for (let i = 0; i < qnt; i++) {
           log.write('LOOP', 'Page Index: ' + i);
 
+          log.write('CONFIG', 'Page URL: ' + generate.PageUrl(i + 1));
           await axios
-            .get(generate.PageUrl(i + 1), { signal: controller.signal })
+            .get(generate.PageUrl(i + 1))
             .then(async (response) => {
               log.write('[GET]', '--current page:' + response.data.page);
               log.write(
                 '[GET]',
                 '----duration:' + response.duration / 1000 + 's',
               );
-              count.setDuration('prod', response.duration / 1000);
+              count.setDuration('pages', response.duration / 1000);
               count.addSucess();
+
+              if (response.data.data.length === 0) {
+                count.addError('EmptyPage');
+              }
 
               response.data.data.forEach((prod, index) => {
                 axios
-                  .get(generate.ProdUrl(prod.codpro), {
-                    signal: controller.signal,
-                  })
+                  .get(generate.ProdUrl(prod.codpro))
                   .then((res) => {
                     log.write('GET', `[${count.total}] Sucess!`);
                     log.write(`----get index: [${index}]`);
@@ -67,8 +68,9 @@ log.bot.start((botCtx) => {
                     log.write('GET', `[${count.total}] Fail`);
                     log.write(
                       'ERROR',
-                      'in getProd ' + e.statusText || 'No error statusText',
+                      `in getProd: | ${e.code} |  ${e.message} | ${e.msg} | ${e.statusText}`,
                     );
+                    count.addError(e.code);
                     log.write('duration: ' + e.duration / 1000 + 's');
                     count.setDuration('prod', e.duration / 1000);
 
@@ -78,10 +80,13 @@ log.bot.start((botCtx) => {
             })
             .catch((e) => {
               log.write('ERROR', 'in getProdList');
-              log.write('--code: ' + e.code);
+              log.write(
+                `'--code: | ${e.code} |  ${e.message} | ${e.msg} | ${e.statusText}`,
+              );
+              count.addError(e.code);
               log.write('--duration: ' + e.duration / 1000 + 's');
 
-              count.setDuration('prod', e.duration / 1000);
+              count.setDuration('pages', e.duration / 1000);
               count.addFail();
             });
         }
@@ -90,9 +95,9 @@ log.bot.start((botCtx) => {
     };
 
     log.bot.command('quit', (botCtx) => {
-      controller.abort();
       botCtx.reply('Stress Test Bot Finished by User!');
       log.write('BOT', 'Stress Test Bot Finished by User!');
+      process.abort();
     });
 
     StressTest(limit).then((resolve) => {
