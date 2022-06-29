@@ -1,6 +1,7 @@
 const axios = require('./axios.config');
 const generate = require('./generateUrl');
 const log = require('./services/log');
+const toTimeString = require('./services/handleTimeString');
 const { Counter, createResume } = require('./services/createResume');
 require('dotenv').config();
 
@@ -18,12 +19,37 @@ log.bot.start((botCtx) => {
       return;
     }
 
-    log.write('CONFIG', 'Number of Pages: ' + limit);
-    botCtx.reply('[CONFIG] Number of Pages: ' + limit);
+    const count = new Counter();
+
+    count.setExpectedDuration(limit).then((resolve) => {
+      log.write('CONFIG', 'Number of Pages: ' + limit);
+      botCtx.reply('[CONFIG] Number of Pages: ' + limit);
+
+      log.write(
+        'CONFIG',
+        'Tempo de execução maximo esperado: ' + toTimeString(resolve.max),
+      );
+      botCtx.reply(
+        '[CONFIG] Tempo de execução maximo esperado: ' +
+          toTimeString(resolve.max),
+      );
+
+      log.write('CONFIG', 'Tempo de execução minimo esperado: ' + resolve.min);
+      botCtx.reply(
+        '[CONFIG] Tempo de execução minimo esperado: ' +
+          toTimeString(resolve.min),
+      );
+
+      log.write(
+        'CONFIG',
+        'Tempo de execução medio: ' + toTimeString(resolve.media),
+      );
+      botCtx.reply(
+        '[CONFIG] Tempo de execução medio: ' + toTimeString(resolve.media),
+      );
+    });
 
     log.writeFileLog('CONFIG', 'Token: ' + process.env.AUTH_TOKEN + '\n');
-
-    const count = new Counter();
 
     const StressTest = (qnt) => {
       log.write('LOOP', 'Starting Stress Test');
@@ -58,7 +84,9 @@ log.bot.start((botCtx) => {
                     log.write('GET', `[${count.total}] Sucess!`);
                     log.write(`----get index: [${index}]`);
                     log.write(`------codpro: ${prod.codpro}`);
-                    log.write('------duration: ' + res.duration / 1000 + 's');
+                    log.write(
+                      '------duration: ' + toTimeString(res.duration / 1000),
+                    );
                     count.setDuration('prod', res.duration / 1000);
                     count.addSucess();
 
@@ -71,7 +99,7 @@ log.bot.start((botCtx) => {
                       `in getProd: | ${e.code} |  ${e.message} | ${e.msg} | ${e.statusText}`,
                     );
                     count.addError(e.code);
-                    log.write('duration: ' + e.duration / 1000 + 's');
+                    log.write('duration: ' + toTimeString(e.duration / 1000));
                     count.setDuration('prod', e.duration / 1000);
 
                     count.addFail();
@@ -84,7 +112,7 @@ log.bot.start((botCtx) => {
                 `'--code: | ${e.code} |  ${e.message} | ${e.msg} | ${e.statusText}`,
               );
               count.addError(e.code);
-              log.write('--duration: ' + e.duration / 1000 + 's');
+              log.write('--duration: ' + toTimeString(e.duration));
 
               count.setDuration('pages', e.duration / 1000);
               count.addFail();
@@ -101,10 +129,11 @@ log.bot.start((botCtx) => {
     });
 
     StressTest(limit).then((resolve) => {
-      log.write('LOOP', 'Finish Stress Test');
-      botCtx.reply('Finish Stress Test!');
-      createResume(count, limit, log.write, resolve.botCtx);
-      botCtx.replyWithDocument({ source: './logs/' + log.logFile });
+      createResume(count, limit, log.write, resolve.botCtx).then(() => {
+        log.write('LOOP', 'Finish Stress Test');
+        botCtx.reply('Finish Stress Test!');
+        botCtx.replyWithDocument({ source: './logs/' + log.logFile });
+      });
     });
   });
 });
