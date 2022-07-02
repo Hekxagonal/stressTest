@@ -70,7 +70,7 @@ class Counter {
   setExpectedDuration(loopLimit) {
     return new Promise((resolve) => {
       // tempo em segundos
-      const maxRegistred = { page: 76.958, prod: 0.402 };
+      const maxRegistred = { page: 30, prod: 0.402 };
       const minRegistred = { page: 0.402, prod: 0.155 };
 
       this.duration.expected.max =
@@ -89,7 +89,7 @@ class Counter {
   }
 }
 
-const createResume = (counter, pages, write, ctx) => {
+const createResume = (counter, pages, write) => {
   return new Promise((resolve) => {
     const resume = `
     [RESUME]|[${pages} pages]
@@ -132,7 +132,6 @@ const createResume = (counter, pages, write, ctx) => {
 
     `;
     write(resume);
-    ctx.reply(resume);
 
     resolve({ resume });
   });

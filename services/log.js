@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { Telegraf } = require('telegraf');
 require('dotenv').config();
 
 const currentDate = new Date();
@@ -22,8 +21,6 @@ fs.writeFile(logFilePath, '[Stress Test] Starting... \n', (err) => {
   write('BOT', 'Waiting Start...');
 });
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
 const breakLine = () => {
   console.log('');
   stream.write('\n');
@@ -41,5 +38,4 @@ module.exports = {
   write,
   breakLine,
   writeFileLog,
-  bot,
 };
