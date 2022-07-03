@@ -1,15 +1,27 @@
+if (!process.argv[2]) {
+  console.error('Insira um numero de paginas');
+  process.exit(9);
+}
+
+if (isNaN(Number(process.argv[2])) || Number(process.argv[2]) < 1) {
+  console.error('O numero de paginas deve ser um numero maior que 0');
+  process.exit(9);
+}
+
 const axios = require('./axios.config');
 const generate = require('./generateUrl');
 const log = require('./services/log');
 const toTimeString = require('./services/handleTimeString');
-const { Counter, createResume } = require('./services/createResume');
+const Counter = require('./services/counter');
+const createResume = require('./services/resume');
 require('dotenv').config();
+
+const limit = process.argv[2];
 
 log.write('CONFIG', 'LogFilePath: ' + log.logFilePath);
 
 const count = new Counter();
-
-const limit = 5001;
+count.setLimit(Number(limit));
 
 count.setExpectedDuration(limit).then((resolve) => {
   log.write('CONFIG', 'Number of Pages: ' + limit);
@@ -105,7 +117,7 @@ const StressTest = (qnt) => {
 };
 
 StressTest(limit).then(() => {
-  createResume(count, limit, log.write).then(() => {
+  createResume(count, log.write).then(() => {
     log.write('LOOP', 'Finish Stress Test');
   });
 });
